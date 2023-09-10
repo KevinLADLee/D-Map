@@ -1,8 +1,8 @@
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 3.5.0)
 project(dmap)
 
-add_compile_options(-std=c++14)
-set(CMAKE_CXX_FLAGS "-std=c++14 -pthread -O3 -fopenmp -DCMAKE_BUILD_TYPE=Debug")
+add_compile_options(-std=c++14 -Wno-dev)
+set(CMAKE_CXX_FLAGS "-std=c++14 -pthread -O3 -fopenmp")
 
 add_definitions(-DROOT_DIR=\"${CMAKE_CURRENT_SOURCE_DIR}/\")
 
@@ -21,8 +21,11 @@ find_package(catkin REQUIRED COMPONENTS
   cv_bridge
 )
 
+find_package(grid_map_ros REQUIRED COMPONETS)
+
+
 find_package(Eigen3 REQUIRED)
-find_package(PCL 1.8 REQUIRED)
+find_package(PCL REQUIRED)
 find_package(fmt REQUIRED)
 
 add_definitions(${EIGEN_DEFINITIONS})
@@ -40,9 +43,10 @@ include_directories(
   ${EIGEN3_INCLUDE_DIR}
   ${PCL_INCLUDE_DIRS}
   ${OCTOMAP_INCLUDE_DIRS}
+        ${grid_map_ros_INCLUDE_DIRS}
 )
 
-message(STATUS "Super Ray Grid Map3D include dir: ${GRIDMAP3D_LIBRARIES}")
+#message(STATUS "Super Ray Grid Map3D include dir: ${GRIDMAP3D_LIBRARIES}")
 
 # # Declare a C++ library
 add_library(${PROJECT_NAME}_lib
@@ -50,6 +54,7 @@ add_library(${PROJECT_NAME}_lib
   include/D-Map/D-Map.cpp
   include/D-Map/octree_map.cpp
   include/D-Map/GridMap.cpp
+  include/D-Map/elevation_map.cpp
 )
 
 # # Add cmake target dependencies of the library
@@ -66,5 +71,6 @@ target_link_libraries(example
   ${catkin_LIBRARIES}
   ${PCL_LIBRARIES}
   ${PROJECT_NAME}_lib
+        ${grid_map_ros_LIBRARIES}
   fmt::fmt
 )

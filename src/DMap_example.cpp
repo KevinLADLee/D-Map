@@ -22,6 +22,8 @@
 #include <visualization_msgs/Marker.h>
 #include <visualization_msgs/MarkerArray.h>
 
+#include <D-Map/elevation_map.h>
+
 #define BUFFER_SIZE 100
 
 std::vector<double> EXT_T, EXT_Q;
@@ -34,7 +36,8 @@ string point_frame, lidar_topic, depth_topic, odom_topic, fixed_frame;
 string odom_topic_type;
 string log_name;
 
-DMap::dmap *dmap_;
+DMap::dmap::Ptr dmap_;
+ElevationMap::Ptr elevation_map_ptr_;
 
 ros::Publisher dmap_octree_pub, bbx_pub, depthmap_pub, dmap_gridmap_pub, odom_pub;
 
@@ -57,7 +60,7 @@ void Visualization() {
 	// Publish odom
 	nav_msgs::Odometry dmap_odom;
 	dmap_odom.header.stamp = ros::Time::now();
-	dmap_odom.header.frame_id = fixed_frame.c_str();
+	dmap_odom.header.frame_id = fixed_frame;
 	dmap_odom.pose.pose.position.x = odom_q.pos(0);
 	dmap_odom.pose.pose.position.y = odom_q.pos(1);
 	dmap_odom.pose.pose.position.z = odom_q.pos(2);
@@ -76,7 +79,7 @@ void Visualization() {
 	cloud_vis.points.assign(vis_ptclouds.begin(), vis_ptclouds.end());
 	pcl::toROSMsg(cloud_vis, output_pointcloud);
 	output_pointcloud.header.stamp = ros::Time::now();
-	output_pointcloud.header.frame_id = fixed_frame.c_str();
+	output_pointcloud.header.frame_id = fixed_frame;
 	dmap_octree_pub.publish(output_pointcloud);
 
 	// Publish grid map
@@ -199,6 +202,7 @@ void Visualization() {
 void CloudPoseCallback(const sensor_msgs::PointCloud2ConstPtr &msg, const geometry_msgs::PoseStampedConstPtr &pose) {
 	last_updated = ros::Time::now();
 
+    // Convert pose stamped type to odom type
 	odom_q.pos(0) = pose->pose.position.x;
 	odom_q.pos(1) = pose->pose.position.y;
 	odom_q.pos(2) = pose->pose.position.z;
@@ -207,12 +211,12 @@ void CloudPoseCallback(const sensor_msgs::PointCloud2ConstPtr &msg, const geomet
 	odom_q.q.y() = pose->pose.orientation.y;
 	odom_q.q.z() = pose->pose.orientation.z;
 	odom_q.R = odom_q.q.matrix();
-
 	odom_q.pos = odom_q.pos;
 
 	pcl::PointCloud<pcl::PointXYZI> CloudsInput;
 	pcl::fromROSMsg(*msg, CloudsInput);
 
+    // Transform point cloud from body frame to world frame
 	if (point_frame == "body") {
 		for (int i = 0; i < CloudsInput.size(); i++) {
 			Vector3f tmp_p(CloudsInput.points[i].x, CloudsInput.points[i].y, CloudsInput.points[i].z);
@@ -222,12 +226,16 @@ void CloudPoseCallback(const sensor_msgs::PointCloud2ConstPtr &msg, const geomet
 			CloudsInput.points[i].z = world_p(2);
 		}
 	}
+
 	dmap_->UpdateMap(odom_q, CloudsInput);
+    elevation_map_ptr_->UpdateElevationMap();
+
 	ros::Time start = ros::Time::now();
 	if (VIS_EN) {
 		Visualization();
 		printf("Visualization Time :%0.3fs\n", (ros::Time::now() - start).toSec());
 	}
+
 }
 
 void CloudOdomCallback(const sensor_msgs::PointCloud2ConstPtr &msg, const nav_msgs::OdometryConstPtr &odom_input) {
@@ -256,6 +264,7 @@ void CloudOdomCallback(const sensor_msgs::PointCloud2ConstPtr &msg, const nav_ms
 
 	odom_q.R = odom_q.R * ext.R;
 	dmap_->UpdateMap(odom_q, CloudsInput);
+    elevation_map_ptr_->UpdateElevationMap();
 	ros::Time start = ros::Time::now();
 	if (VIS_EN) {
 		Visualization();
@@ -294,7 +303,8 @@ int main(int argc, char **argv) {
 	root_dir = ROOT_DIR;
 
 	DMap::DMapConfig demap_cfg(nh);
-	dmap_ = new DMap::dmap(demap_cfg);
+	dmap_ = std::make_shared<DMap::dmap>(demap_cfg);
+    elevation_map_ptr_ = std::make_shared<ElevationMap>(nh, dmap_);
 
 	cloud_sub_.reset(new message_filters::Subscriber<sensor_msgs::PointCloud2>(nh, lidar_topic.c_str(), 50));
 
@@ -340,7 +350,6 @@ int main(int argc, char **argv) {
 		printf("[Node] Map Saved\n");
 	}
 
-	delete dmap_;
 	ros::shutdown();
 	return 0;
 }

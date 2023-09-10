@@ -4,7 +4,7 @@
 namespace DMap {
 	template <typename PointType>
 
-	class gridmap {
+	class GridMap3D {
 	public:
 		using PointVector = vector<PointType, Eigen::aligned_allocator<PointType>>;
 
@@ -29,15 +29,20 @@ namespace DMap {
 		int side_L[3];
 
 	public:
-		gridmap();
-		gridmap(float res, BoxPointType box);
-		~gridmap();
+      GridMap3D();
+      GridMap3D(float res, BoxPointType box);
+		~GridMap3D();
 		int size();
 		void SetMapParams(float res, BoxPointType box, float range = INFINITY);
 		void AddPoints(PointVector &points);
 		void AddPoints(OdomType odom, PointVector &points);
 		void RetrievePoints(PointVector &points);
 		void RetrievePointCenters(PointVector &points);
+
+        /**
+         * @brief slide the map to a new bounding box
+         * @param new_bbx
+         */
 		void SlideMap(BoxPointType new_bbx);
 
 		bool CheckOccupied(PointType point);

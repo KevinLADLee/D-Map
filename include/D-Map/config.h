@@ -6,7 +6,7 @@ namespace DMap {
 	class DMapConfig {
 	public:
 		DMapConfig();
-		DMapConfig(const ros::NodeHandle nh, string name_space = "DMap");
+		explicit DMapConfig(const ros::NodeHandle nh, string name_space = "DMap");
 		~DMapConfig();
 
 		/* LiDAR params*/

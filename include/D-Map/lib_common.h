@@ -4,7 +4,7 @@
 #include <chrono>
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
-#include <stdio.h>
+#include <cstdio>
 
 #define EPSS 1e-5
 #define MAX_INT 1e5

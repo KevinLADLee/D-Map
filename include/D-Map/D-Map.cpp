@@ -500,7 +500,7 @@ namespace DMap {
 		}
 	}
 
-	void dmap::UpdateMap(OdomType odom, PointClouds &pointclouds) {
+	void dmap::UpdateMap(const OdomType& odom, PointClouds &pointclouds) {
 		assert(SENSOR_PARAMS_SET && "MAP PARAMS NOT SET");
 		assert(INITIALIZE && "MAP NOT INITIALIZED");
 		// printf("----------------------------\n");
@@ -605,7 +605,7 @@ namespace DMap {
 		}
 	}
 
-	void dmap::OutputMap(string octree_log, string gridmap_log) {
+	void dmap::OutputMap(const string& octree_log, const string& gridmap_log) {
 		FILE *octree_fp = fopen(octree_log.c_str(), "w");
 		fprintf(octree_fp, "%0.3f\n", map_res);
 		fprintf(octree_fp, "(%0.3f,%0.3f),(%0.3f,%0.3f),(%0.3f,%0.3f)\n", env_box.vertex_min[0], env_box.vertex_max[0],

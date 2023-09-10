@@ -3,30 +3,30 @@
 
 namespace DMap {
 	template <typename PointType>
-	gridmap<PointType>::gridmap() {
+	GridMap3D<PointType>::GridMap3D() {
 		MapParams_SET = false;
 	}
 
 	template <typename PointType>
-	gridmap<PointType>::gridmap(float res, BoxPointType box) {
+	GridMap3D<PointType>::GridMap3D(float res, BoxPointType box) {
 		resolution = res;
 		BoundingBox = box;
 		MapParams_SET = true;
 	}
 
 	template <typename PointType>
-	gridmap<PointType>::~gridmap() {
+	GridMap3D<PointType>::~GridMap3D() {
 		clear();
-		printf("[GridMap]: Map Deleted\n");
+		printf("[GridMap3D]: Map Deleted\n");
 	}
 
 	template <typename PointType>
-	int gridmap<PointType>::size() {
+	int GridMap3D<PointType>::size() {
 		return map.total_size();
 	}
 
 	template <typename PointType>
-	void gridmap<PointType>::SetMapParams(float res, BoxPointType box, float range) {
+	void GridMap3D<PointType>::SetMapParams(float res, BoxPointType box, float range) {
 		resolution = res;
 		BoundingBox = box;
 		MapParams_SET = true;
@@ -38,7 +38,7 @@ namespace DMap {
 	}
 
 	template <typename PointType>
-	BoxPointType gridmap<PointType>::AcquireBox(PointType p) {
+	BoxPointType GridMap3D<PointType>::AcquireBox(PointType p) {
 		BoxPointType box;
 		box.vertex_min[0] = floor((p.x - BoundingBox.vertex_min[0]) / resolution) * resolution + BoundingBox.vertex_min[0];
 		box.vertex_min[1] = floor((p.y - BoundingBox.vertex_min[1]) / resolution) * resolution + BoundingBox.vertex_min[1];
@@ -49,7 +49,7 @@ namespace DMap {
 	}
 
 	template <typename PointType>
-	PointType gridmap<PointType>::AcquireCenter(PointType p) {
+	PointType GridMap3D<PointType>::AcquireCenter(PointType p) {
 		PointType center;
 		center.x = floor((p.x - BoundingBox.vertex_min[0]) / resolution) * resolution + BoundingBox.vertex_min[0] + resolution / 2.0;
 		center.y = floor((p.y - BoundingBox.vertex_min[1]) / resolution) * resolution + BoundingBox.vertex_min[1] + resolution / 2.0;
@@ -58,7 +58,7 @@ namespace DMap {
 	}
 
 	template <typename PointType>
-	bool gridmap<PointType>::InsideBox(PointType p) {
+	bool GridMap3D<PointType>::InsideBox(PointType p) {
 		if (p.x < BoundingBox.vertex_min[0] + EPSS || p.x > BoundingBox.vertex_max[0] - EPSS)
 			return false;
 		if (p.y < BoundingBox.vertex_min[1] + EPSS || p.y > BoundingBox.vertex_max[1] - EPSS)
@@ -69,8 +69,8 @@ namespace DMap {
 	}
 
 	template <typename PointType>
-	void gridmap<PointType>::AddPoints(OdomType odom, PointVector &points) {
-		assert(MapParams_SET && "GridMap Params Unset");
+	void GridMap3D<PointType>::AddPoints(OdomType odom, PointVector &points) {
+		assert(MapParams_SET && "GridMap3D Params Unset");
 		size_t i;
 		float cur_dist, new_dist;
 		for (i = 0; i < points.size(); i++) {
@@ -94,8 +94,8 @@ namespace DMap {
 	}
 
 	template <typename PointType>
-	void gridmap<PointType>::AddPoints(PointVector &points) {
-		assert(MapParams_SET && "GridMap Params Unset");
+	void GridMap3D<PointType>::AddPoints(PointVector &points) {
+		assert(MapParams_SET && "GridMap3D Params Unset");
 		size_t i;
 		float cur_dist, new_dist;
 		for (i = 0; i < points.size(); i++) {
@@ -116,12 +116,12 @@ namespace DMap {
 	}
 
 	template <typename PointType>
-	float gridmap<PointType>::CalcDist(PointType p1, PointType p2) {
+	float GridMap3D<PointType>::CalcDist(PointType p1, PointType p2) {
 		return ((p1.x - p2.x) * (p1.x - p2.x) + (p1.y - p2.y) * (p1.y - p2.y) + (p1.z - p2.z) * (p1.z - p2.z));
 	}
 
 	template <typename PointType>
-	void gridmap<PointType>::RetrievePoints(PointVector &points) {
+	void GridMap3D<PointType>::RetrievePoints(PointVector &points) {
 		std::vector<PointType> tmp;
 		map.all_data(tmp);
 		points.clear();
@@ -131,7 +131,7 @@ namespace DMap {
 	}
 
 	template <typename PointType>
-	void gridmap<PointType>::RetrievePointCenters(PointVector &points) {
+	void GridMap3D<PointType>::RetrievePointCenters(PointVector &points) {
 		std::vector<PointType> tmp;
 		map.all_data(tmp);
 		points.clear();
@@ -141,7 +141,7 @@ namespace DMap {
 	}
 
 	template <typename PointType>
-	void gridmap<PointType>::OutputMap(FILE *fp) {
+	void GridMap3D<PointType>::OutputMap(FILE *fp) {
 		std::vector<PointType> tmp;
 		map.all_data(tmp);
 		for (size_t i = 0; i < tmp.size(); i++) {
@@ -150,7 +150,7 @@ namespace DMap {
 	}
 
 	template <typename PointType>
-	bool gridmap<PointType>::CheckOccupied(PointType point) {
+	bool GridMap3D<PointType>::CheckOccupied(PointType point) {
 		if (!InsideBox(point))
 			return false;
 		PointType center = AcquireCenter(point);
@@ -158,37 +158,37 @@ namespace DMap {
 	}
 
 	template <typename PointType>
-	void gridmap<PointType>::SlideMap(BoxPointType new_bbx) {
+	void GridMap3D<PointType>::SlideMap(BoxPointType new_bbx) {
 		map.erase_data_out_of_range(new_bbx.vertex_min[0], new_bbx.vertex_max[0], new_bbx.vertex_min[1], new_bbx.vertex_max[1], new_bbx.vertex_min[2], new_bbx.vertex_max[2]);
 		BoundingBox = new_bbx;
 		// }
 	}
 
 	template <typename PointType>
-	void gridmap<PointType>::clear() {
+	void GridMap3D<PointType>::clear() {
 		map.clear();
 	}
 
 	template <typename PointType>
-	size_t gridmap<PointType>::GetMemory() {
+	size_t GridMap3D<PointType>::GetMemory() {
 		return (map.get_memory() + sizeof(*this));
 	}
 
 	template <typename PointType>
-	double gridmap<PointType>::GetMemKB() {
+	double GridMap3D<PointType>::GetMemKB() {
 		return double(GetMemory()) / 1024.0;
 	}
 
 	template <typename PointType>
-	double gridmap<PointType>::GetMemMB() {
+	double GridMap3D<PointType>::GetMemMB() {
 		return double(GetMemory()) / 1024.0 / 1024.0;
 	}
 
 	template <typename PointType>
-	double gridmap<PointType>::GetMemGB() {
+	double GridMap3D<PointType>::GetMemGB() {
 		return double(GetMemory()) / 1024.0 / 1024.0 / 1024.0;
 	}
 
 } // namespace DMap
 
-template class DMap::gridmap<PointType>;
+template class DMap::GridMap3D<PointType>;

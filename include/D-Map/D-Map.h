@@ -1,6 +1,7 @@
+#pragma once
 #include <chrono>
 #include <pthread.h>
-#include <string.h>
+#include <cstring>
 
 #include <D-Map/GridMap.h>
 #include <D-Map/config.h>
@@ -15,7 +16,7 @@ namespace DMap {
 	private:
 		DMap::octree_map<PointType> octree;
 		DMap::SegmentTree segtree;
-		DMap::gridmap<PointType> occupied_map;
+		DMap::GridMap3D<PointType> occupied_map;
 
 		// Demap Params
 		float full_ratio = 0.8;
@@ -75,6 +76,7 @@ namespace DMap {
 		size_t memUsage();
 
 	public:
+        using Ptr = std::shared_ptr<dmap>;
 		BoxPointType env_box;
 		DepthmapType cur_depthmap;
 		OdomType init_odom;
@@ -82,9 +84,9 @@ namespace DMap {
 		dmap(float resolution, float accuracy, float f_ratio);
 		dmap(DMapConfig &demap_cfg);
 		~dmap();
-		void UpdateMap(OdomType odom, PointClouds &pointclouds);
+		void UpdateMap(const OdomType& odom, PointClouds &pointclouds);
 		void Initialize(BoxPointType env_box, float len);
-		void OutputMap(string octree_log, string gridmap_log);
+		void OutputMap(const string& octree_log, const string& gridmap_log);
 		void unknown_pointcloud_visualize(PointVector &pointclouds);
 		void occupied_pointcloud_visualize(PointVector &pointclouds);
 		void Set_Sensor_Params(uint8_t shape, std::vector<double> &fov_theta_range, std::vector<double> &fov_phi_range,
@@ -108,5 +110,6 @@ namespace DMap {
 		double getResolution();
 		bool CheckUnknown(Vector3d pos);
 		bool CheckOccupied(Vector3d pos);
-	};
+
+    };
 } // namespace DMap
