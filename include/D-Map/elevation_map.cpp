@@ -37,7 +37,9 @@ void ElevationMap::UpdateElevationMap() {
 //    std::cout << "z value: " << z_value << std::endl;
     if(std::isnan(z_value) || z_value < point.z){
 //      std::cout << "update" << std::endl;
-      elevation_map_ptr_->atPosition("elevation", grid_map::Position(point.x, point.y)) = point.z;
+      if(elevation_map_ptr_->isInside(grid_map::Position(point.x, point.y))){
+        elevation_map_ptr_->atPosition("elevation", grid_map::Position(point.x, point.y)) = point.z;
+      }
     }
   }
 

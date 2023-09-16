@@ -4,11 +4,11 @@ FOV_phi_range: [-38.7,38.7]           # Unit: deg
 FOV_depth: 60.0        # Unit: meter
 sensor_res_hor:  [0.05]     # Unit: deg
 sensor_res_vert: [0.2]    # Unit: deg
-environment: [-23.0,-15.0,0.0,17.0,25.0,3.0]    # Unit: meter
+environment: [-23.0,-15.0,-1.0,17.0,25.0,2.0]    # Unit: meter
 
 point_frame: "world"
-#lidar_topic: "/cloud_registered"
-lidar_topic: "/cloud_pcd"
+lidar_topic: "/cloud_registered"
+# lidar_topic: "/cloud_pcd"
 odom_topic: "/Odometry"
 odom_topic_type: "odometry"
 fixed_frame: "world"
